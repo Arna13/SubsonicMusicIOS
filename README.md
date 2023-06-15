@@ -1,3 +1,3 @@
 # SubsonicMusicIOS
 
-### WIP - Don't use this yet
+### Under development, not fully featured
