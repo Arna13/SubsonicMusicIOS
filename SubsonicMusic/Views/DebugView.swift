@@ -59,6 +59,8 @@ struct DebugView: View {
                         checkServer()
                     }
                 }
+            } else {
+                ProgressView()
             }
         }
         .padding()

@@ -19,6 +19,7 @@
 		9DC929B82A38F69B001C02EC /* SubsonicAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC929B72A38F69B001C02EC /* SubsonicAPI.swift */; };
 		9DC929BA2A38FB52001C02EC /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC929B92A38FB52001C02EC /* DebugView.swift */; };
 		9DC929BD2A38FC96001C02EC /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC929BC2A38FC96001C02EC /* Credentials.swift */; };
+		9DDB76E22A3B51CE0039146B /* SubsonicAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DDB76E12A3B51CE0039146B /* SubsonicAPIModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		9DC929B72A38F69B001C02EC /* SubsonicAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubsonicAPI.swift; sourceTree = "<group>"; };
 		9DC929B92A38FB52001C02EC /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DebugView.swift; path = SubsonicMusic/Views/DebugView.swift; sourceTree = SOURCE_ROOT; };
 		9DC929BC2A38FC96001C02EC /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
+		9DDB76E12A3B51CE0039146B /* SubsonicAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubsonicAPIModels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				9DC929B72A38F69B001C02EC /* SubsonicAPI.swift */,
+				9DDB76E12A3B51CE0039146B /* SubsonicAPIModels.swift */,
 			);
 			path = API;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				9D62A3E32A392348008D6FB6 /* SubsonicMusic.xcdatamodeld in Sources */,
 				9DC929BD2A38FC96001C02EC /* Credentials.swift in Sources */,
 				9DC929B82A38F69B001C02EC /* SubsonicAPI.swift in Sources */,
+				9DDB76E22A3B51CE0039146B /* SubsonicAPIModels.swift in Sources */,
 				9D62A3DE2A391F4A008D6FB6 /* CoreData.swift in Sources */,
 				9DC929BA2A38FB52001C02EC /* DebugView.swift in Sources */,
 				9DC929B32A38EB5C001C02EC /* SongsView.swift in Sources */,
