@@ -96,6 +96,8 @@ struct DebugView: View {
         playlistsViewModel.isSyncing = true
         let subsonicAPI = SubsonicAPI.shared
         
+        clearDatabase()
+        
         subsonicAPI.getAllSongs { songs in
             let context = CoreDataStack.shared.viewContext
             
@@ -154,7 +156,7 @@ struct DebugView: View {
                         playlistObject = results.first!
                     }
                     
-                    subsonicAPI.getSongs(forPlaylistId: playlist.value(forKey: "id") as! String) { songs in
+                    subsonicAPI.getPlaylistSongs(forPlaylistId: playlist.value(forKey: "id") as! String) { songs in
                         for song in songs {
                             let songFetchRequest: NSFetchRequest<Song> = Song.fetchRequest()
                             songFetchRequest.predicate = NSPredicate(format: "id == %@", song.value(forKey: "id") as! String)

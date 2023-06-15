@@ -26,60 +26,7 @@ class SubsonicAPI {
             self.password = "password"
         }
     }
-    
-    func getRandomSongs(completion: @escaping ([NSManagedObject]) -> Void) {
-        let url = buildURL(path: "/rest/getRandomSongs")
-        
-        sendRequest(url: url) { data in
-            guard let data = data else {
-                completion([])
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(SongsResponse.self, from: data)
-                
-                let songs = response.songs.map { song in
-                    let context = CoreDataStack.shared.viewContext
-                    let songEntity = NSEntityDescription.entity(forEntityName: "Song", in: context)!
-                    let songObject = NSManagedObject(entity: songEntity, insertInto: context)
-                    songObject.setValue(song.id, forKey: "id")
-                    songObject.setValue(song.title, forKey: "title")
-                    songObject.setValue(song.artist, forKey: "artist")
-                    
-                    return songObject
-                }
-                
-                completion(songs)
-            } catch {
-                print("Error decoding response data: \(error)")
-                completion([])
-            }
-        }
-    }
-    
-    func ping(completion: @escaping (Bool) -> Void) {
-        let url = buildURL(path: "/rest/ping")
-        
-        sendRequest(url: url) { data in
-            guard let data = data else {
-                completion(false)
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let response = try decoder.decode(PingResponse.self, from: data)
-                print(response)
-                completion(response.status == "ok")
-            } catch {
-                print("Error decoding response data: \(error)")
-                completion(false)
-            }
-        }
-    }
-    
+
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) -> URL? {
         var urlComponents = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)
         urlComponents?.path = path
@@ -111,6 +58,27 @@ class SubsonicAPI {
             completion(data)
         }
         task.resume()
+    }
+    
+    func ping(completion: @escaping (Bool) -> Void) {
+        let url = buildURL(path: "/rest/ping")
+        
+        sendRequest(url: url) { data in
+            guard let data = data else {
+                completion(false)
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let response = try decoder.decode(PingResponse.self, from: data)
+                print(response)
+                completion(response.status == "ok")
+            } catch {
+                print("Error decoding response data: \(error)")
+                completion(false)
+            }
+        }
     }
 
     func getPlaylists(completion: @escaping ([NSManagedObject]) -> Void) {
@@ -148,7 +116,7 @@ class SubsonicAPI {
         }
     }
     
-    func getSongs(forPlaylistId playlistId: String, completion: @escaping ([NSManagedObject]) -> Void) {
+    func getPlaylistSongs(forPlaylistId playlistId: String, completion: @escaping ([NSManagedObject]) -> Void) {
         print("getSongs called with playlistId: \(playlistId)")
         let url = buildURL(path: "/rest/getPlaylist", queryItems: [URLQueryItem(name: "id", value: playlistId)])
         print("getSongs URL: \(url?.absoluteString ?? "")")
