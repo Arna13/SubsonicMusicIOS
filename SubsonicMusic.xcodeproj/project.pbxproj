@@ -86,12 +86,12 @@
 		9DC9299C2A38D8C4001C02EC /* SubsonicMusic */ = {
 			isa = PBXGroup;
 			children = (
-				9D62A3EB2A393EE6008D6FB6 /* ViewModels */,
-				9D62A3E42A392631008D6FB6 /* Data */,
-				9DC929BB2A38FC8A001C02EC /* Extra */,
-				9DC929B62A38F68A001C02EC /* API */,
-				9DC929AB2A38D938001C02EC /* Views */,
 				9DC9299D2A38D8C4001C02EC /* SubsonicMusicApp.swift */,
+				9DC929B62A38F68A001C02EC /* API */,
+				9D62A3E42A392631008D6FB6 /* Data */,
+				9DDB76E32A3B7ACB0039146B /* Utils */,
+				9DC929AB2A38D938001C02EC /* Views */,
+				9D62A3EB2A393EE6008D6FB6 /* ViewModels */,
 				9DC929A12A38D8C5001C02EC /* Assets.xcassets */,
 				9DC929A32A38D8C5001C02EC /* Preview Content */,
 			);
@@ -126,12 +126,12 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		9DC929BB2A38FC8A001C02EC /* Extra */ = {
+		9DDB76E32A3B7ACB0039146B /* Utils */ = {
 			isa = PBXGroup;
 			children = (
 				9DC929BC2A38FC96001C02EC /* Credentials.swift */,
 			);
-			path = Extra;
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

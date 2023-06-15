@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 struct SongsView: View {
-@FetchRequest(entity: Song.entity(), sortDescriptors: []) var songs: FetchedResults<Song>
+    @FetchRequest(entity: Song.entity(), sortDescriptors: []) var songs: FetchedResults<Song>
     @State private var searchText = ""
     
     var body: some View {
@@ -83,13 +83,34 @@ struct SongRow: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                Text(song.title ?? "Unknown Song")
-                    .font(.headline)
-                    .lineLimit(1)
+                if let coverArtData = song.coverArtData,
+                   let coverArtImage = UIImage(data: coverArtData) {
+                    Image(uiImage: coverArtImage)
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(4)
+                } else {
+                    Image(systemName: "music.note")
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(4)
+                }
                 
-                Text(song.artist ?? "Unknown Artist")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                VStack(alignment: .leading) {
+                    Text(song.title ?? "Unknown Song")
+                        .font(.headline)
+                        .lineLimit(1)
+                    
+                    Text(song.artist ?? "Unknown Artist")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    
+                    if let album = song.album {
+                        Text(album)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }
                 
                 Spacer()
             }
@@ -100,6 +121,8 @@ struct SongRow: View {
         .background(Color.clear)
     }
 }
+
+
 
 struct SearchBar: UIViewRepresentable {
     @Binding var text: String
@@ -138,7 +161,6 @@ struct SearchBar: UIViewRepresentable {
         uiView.text = text
     }
 }
-
 
 struct ListenNowView_Previews: PreviewProvider {
     static var previews: some View {

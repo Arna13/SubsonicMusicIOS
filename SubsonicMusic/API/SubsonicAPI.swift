@@ -7,13 +7,21 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 class SubsonicAPI {
+    
+    // DEBUG MODE
+    let debugMode = true;
+    
+    let operationQueue = OperationQueue()
     static let shared = SubsonicAPI()
     
     let baseURL: URL
     let username: String
     let password: String
+    
+    var syncStatusChanged: ((Bool) -> Void)?
     
     private init() {
         if let credentials = loadCredentials() {
@@ -25,6 +33,8 @@ class SubsonicAPI {
             self.username = "username"
             self.password = "password"
         }
+        
+        operationQueue.maxConcurrentOperationCount = 1
     }
 
     private func buildURL(path: String, queryItems: [URLQueryItem] = []) -> URL? {
@@ -40,10 +50,10 @@ class SubsonicAPI {
         
         return urlComponents?.url
     }
-    
-    private func sendRequest(url: URL?, completion: @escaping (Data?) -> Void) {
+
+    func sendRequest(url: URL?, delay: UInt32 = 500000, completion: @escaping (Data?, Error?) -> Void) {
         guard let url = url else {
-            completion(nil)
+            completion(nil, nil)
             return
         }
         
@@ -51,11 +61,15 @@ class SubsonicAPI {
         request.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
+            if let error = error as NSError?, error.domain == NSURLErrorDomain && error.code == NSURLErrorNetworkConnectionLost {
+                usleep(delay)
+                self.sendRequest(url: url, delay: delay * 2, completion: completion)
+            } else if let error = error {
                 print("Error sending request: \(error)")
+                completion(nil, error)
+            } else {
+                completion(data, nil)
             }
-            
-            completion(data)
         }
         task.resume()
     }
@@ -63,7 +77,7 @@ class SubsonicAPI {
     func ping(completion: @escaping (Bool) -> Void) {
         let url = buildURL(path: "/rest/ping")
         
-        sendRequest(url: url) { data in
+        sendRequest(url: url) { data, error in
             guard let data = data else {
                 completion(false)
                 return
@@ -87,7 +101,7 @@ class SubsonicAPI {
             return
         }
         
-        sendRequest(url: url) { data in
+        sendRequest(url: url) { data, error in
             guard let data = data else {
                 completion([])
                 return
@@ -121,7 +135,7 @@ class SubsonicAPI {
         let url = buildURL(path: "/rest/getPlaylist", queryItems: [URLQueryItem(name: "id", value: playlistId)])
         print("getSongs URL: \(url?.absoluteString ?? "")")
         
-        sendRequest(url: url) { data in
+        sendRequest(url: url) { data, error in
             guard let data = data else {
                 print("getSongs received no data")
                 completion([])
@@ -152,10 +166,33 @@ class SubsonicAPI {
         }
     }
     
+    func getCoverArt(id: String, completion: @escaping (UIImage?) -> Void) {
+        let url = buildURL(path: "/rest/getCoverArt", queryItems: [URLQueryItem(name: "id", value: id)])
+        
+        sendRequest(url: url) { data, error in
+            if let data = data {
+                if let image = UIImage(data: data) {
+                    completion(image)
+                } else {
+                    print("Error fetching cover art image for song with ID \(id): Data is not a valid image")
+                    print("Data: \(String(data: data, encoding: .utf8) ?? "nil")")
+                    completion(nil)
+                }
+            } else if let error = error {
+                print("Error fetching cover art image for song with ID \(id): \(error)")
+                completion(nil)
+            } else {
+                print("Error fetching cover art image for song with ID \(id): No data returned")
+                completion(nil)
+            }
+        }
+    }
+    
     func getAllSongs(completion: @escaping ([NSManagedObject]) -> Void) {
+        syncStatusChanged?(true)
         let url = self.buildURL(path: "/rest/getMusicFolders")
         
-        sendRequest(url: url) { data in
+        sendRequest(url: url) { data, error in
             guard let data = data else {
                 completion([])
                 return
@@ -176,7 +213,7 @@ class SubsonicAPI {
                     
                     let url = self.buildURL(path: "/rest/getIndexes", queryItems: [URLQueryItem(name: "musicFolderId", value: musicFolderId)])
                     
-                    self.sendRequest(url: url) { data in
+                    self.sendRequest(url: url) { data, error in
                         guard let data = data else {
                             group.leave()
                             return
@@ -192,7 +229,7 @@ class SubsonicAPI {
                                     
                                     let url = self.buildURL(path: "/rest/getMusicDirectory", queryItems: [URLQueryItem(name: "id", value: artist.id)])
                                     
-                                    self.sendRequest(url: url) { data in
+                                    self.sendRequest(url: url) { data, error in
                                         guard let data = data else {
                                             group.leave()
                                             return
@@ -201,16 +238,44 @@ class SubsonicAPI {
                                         do {
                                             let decoder = JSONDecoder()
                                             let response = try decoder.decode(MusicDirectoryResponse.self, from: data)
-                                            
+                                                                                            
                                             for song in response.songs {
-                                                let context = CoreDataStack.shared.viewContext
-                                                let songEntity = NSEntityDescription.entity(forEntityName: "Song", in: context)!
-                                                let songObject = NSManagedObject(entity: songEntity, insertInto: context)
-                                                songObject.setValue(song.id, forKey: "id")
-                                                songObject.setValue(song.title, forKey: "title")
-                                                songObject.setValue(song.artist, forKey: "artist")
-                                                
-                                                allSongs.append(songObject)
+                                                print(song)
+                                                DispatchQueue.main.async {
+                                                    let context = CoreDataStack.shared.viewContext
+                                                    let songEntity = NSEntityDescription.entity(forEntityName: "Song", in: context)!
+                                                    let songObject = NSManagedObject(entity: songEntity, insertInto: context)
+                                                    songObject.setValue(song.id, forKey: "id")
+                                                    songObject.setValue(song.title, forKey: "title")
+                                                    songObject.setValue(song.artist, forKey: "artist")
+                                                    songObject.setValue(song.album, forKey: "album")
+                                                    songObject.setValue(song.coverArt, forKey: "coverArt")
+                                                    songObject.setValue(song.duration, forKey: "duration")
+                                                    songObject.setValue(song.bitRate, forKey: "bitRate")
+                                                    songObject.setValue(song.contentType, forKey: "contentType")
+                                                    
+                                                    if let coverArtId = song.coverArt {
+                                                        group.enter()
+                                                        
+                                                        self.getCoverArt(id: coverArtId) { image in
+                                                            if let image = image,
+                                                               let imageData = image.pngData() {
+                                                                songObject.setValue(imageData, forKey: "coverArtData")
+                                                            } else {
+                                                                print("Error fetching cover art image for song with ID \(song.id)")
+                                                            }
+                                                            
+                                                            group.leave()
+                                                        }
+                                                    } else {
+                                                        print("No cover art ID available for song with ID \(song.id)")
+                                                    }
+                                                    
+                                                    print("Song data: \(song)")
+                                                    
+
+                                                    allSongs.append(songObject)
+                                                }
                                             }
                                             
                                             group.leave()
@@ -231,6 +296,8 @@ class SubsonicAPI {
                 }
                 
                 group.notify(queue: .main) {
+                    print("All syncing is done!")
+                    self.syncStatusChanged?(false)
                     completion(allSongs)
                 }
             } catch {

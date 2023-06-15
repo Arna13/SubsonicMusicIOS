@@ -12,13 +12,14 @@ struct DebugView: View {
     @EnvironmentObject var playlistsViewModel: PlaylistsViewModel
     @State private var serverReachable = false
     @State private var serverStatusChecked = false
+    @State private var isSyncing = false
     @State private var baseURLString = ""
     @State private var username = ""
     @State private var password = ""
     
     var body: some View {
         VStack {
-            if serverStatusChecked {
+            if serverStatusChecked && !playlistsViewModel.isSyncing {
                 if serverReachable {
                     Text("Server is reachable")
                         .foregroundColor(.green)
@@ -60,6 +61,10 @@ struct DebugView: View {
                     }
                 }
             } else {
+                ProgressView()
+            }
+            
+            if isSyncing {
                 ProgressView()
             }
         }
@@ -199,7 +204,11 @@ struct DebugView: View {
             }
         }
         
-        playlistsViewModel.isSyncing = false
+        DispatchQueue.main.async {
+            SubsonicAPI.shared.syncStatusChanged = { syncing in
+                playlistsViewModel.isSyncing = syncing
+            }
+        }
     }
     
     func clearDatabase() {
@@ -218,7 +227,9 @@ struct DebugView: View {
                 print("Error clearing \(entity) data from database: \(error)")
             }
         }
-        playlistsViewModel.isDeleting = false
+        DispatchQueue.main.async {
+            playlistsViewModel.isDeleting = false
+        }
         playlistsViewModel.loadPlaylists()
     }
 }

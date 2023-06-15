@@ -7,6 +7,7 @@
 
 import Foundation
 
+// Playlists
 struct PlaylistData: Decodable {
     let id: String
     let name: String
@@ -48,9 +49,19 @@ struct PlaylistSongsResponse: Decodable {
     }
 }
 
+
+// Music folders/dir
 struct MusicFolder: Decodable {
     let id: Int
     let name: String
+}
+
+struct MusicFolders: Decodable {
+    let musicFolder: [MusicFolder]
+}
+
+struct Directory: Decodable {
+    let child: [SongData]
 }
 
 struct MusicFoldersResponse: Decodable {
@@ -65,11 +76,20 @@ struct MusicFoldersResponse: Decodable {
     }
 }
 
-struct Artist: Decodable {
-    let id: String
-    let name: String
+struct MusicDirectoryResponse: Decodable {
+    let subsonicResponse: SubsonicResponse
+    
+    var songs: [SongData] {
+        return subsonicResponse.directory?.child ?? []
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case subsonicResponse = "subsonic-response"
+    }
 }
 
+
+// Index
 struct Index: Decodable {
     let name: String
     let artists: [Artist]
@@ -78,6 +98,10 @@ struct Index: Decodable {
         case name
         case artists = "artist"
     }
+}
+
+struct Indexes: Decodable {
+    let index: [Index]
 }
 
 struct IndexesResponse: Decodable {
@@ -92,33 +116,34 @@ struct IndexesResponse: Decodable {
     }
 }
 
+
+// Songs
 struct SongData: Decodable {
     let id: String
     let title: String
     let artist: String
+    let album: String?
+    let coverArt: String?
+    let bitRate: Int?
+    let contentType: String?
+    let duration: Int?
 }
 
-struct MusicDirectoryResponse: Decodable {
-    let subsonicResponse: SubsonicResponse
-    
-    var songs: [SongData] {
-        return subsonicResponse.directory?.child ?? []
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case subsonicResponse = "subsonic-response"
-    }
-}
 
-struct RandomSongs: Decodable {
+struct Songs: Decodable {
     let song: [SongData]
+}
+
+struct Artist: Decodable {
+    let id: String
+    let name: String
 }
 
 struct SongsResponse: Decodable {
     let subsonicResponse: SubsonicResponse
     
     var songs: [SongData] {
-        return subsonicResponse.randomSongs?.song ?? []
+        return subsonicResponse.songs?.song ?? []
     }
     
     enum CodingKeys: String, CodingKey {
@@ -126,6 +151,8 @@ struct SongsResponse: Decodable {
     }
 }
 
+
+// Extra
 struct PingResponse: Decodable {
     let subsonicResponse: SubsonicResponse
     
@@ -138,24 +165,14 @@ struct PingResponse: Decodable {
     }
 }
 
-struct MusicFolders: Decodable {
-    let musicFolder: [MusicFolder]
-}
 
-struct Indexes: Decodable {
-    let index: [Index]
-}
-
-struct Directory: Decodable {
-    let child: [SongData]
-}
-
+// Subsonic response
 struct SubsonicResponse: Decodable {
     let status: String
     let version: String
     let type: String
     let serverVersion: String
-    let randomSongs: RandomSongs?
+    let songs: Songs?
     let playlists: Playlists?
     let playlist: PlaylistSongsData?
     let musicFolders: MusicFolders?
