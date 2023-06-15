@@ -26,6 +26,14 @@ Current TODOs (ordered by priority)
 -  Play music, since it currently only parses text data from the API but it can't play any music yet.
 
 
+Known bugs
+-
+
+- Not all cover arts get downloaded (rate limited)
+- Song titles are broken with current API implementation for getAllSongs()
+- Some songs show no album name on the UI
+
+
 Planned features
 -
 
